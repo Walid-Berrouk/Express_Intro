@@ -1,0 +1,2 @@
+::ffff:127.0.0.1 - - [08/Oct/2022:14:06:48 +0000] "GET / HTTP/1.1" 304 - "-" "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:105.0) Gecko/20100101 Firefox/105.0"
+::ffff:127.0.0.1 - - [08/Oct/2022:14:07:01 +0000] "GET / HTTP/1.1" 304 - "-" "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:105.0) Gecko/20100101 Firefox/105.0"
