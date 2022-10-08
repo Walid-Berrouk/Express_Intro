@@ -164,20 +164,58 @@
 
 //? Level 6 : Logging Data using Morgan
 
+// const express = require('express')
+// const path = require('path')
+// const Logger = require("morgan")
+// const fs = require('fs')
+
+// // Init express
+
+// const app = express()
+
+// // create a write stream (in append mode)
+// var accessLogStream = fs.createWriteStream(path.join(__dirname, "storage", "logsMorgan.txt"), { flags: 'a' })
+ 
+// // Logger 
+// app.use(Logger('combined', { stream: accessLogStream }))
+
+
+// // File serving
+
+// app.use(express.static('public'))
+// // app.use('/public', express.static(path.join(__dirname, 'public')))
+
+// // Create Route Handlers
+// app.get('/', (req, res) => {
+//     console.log('Hello World !')
+//     res.end("Hello World !")
+// })
+
+// app.get('/home', (req, res) => {
+//     res.writeHead(200, { "Content-Type": "text/html " })
+//     res.end("<h1>Home Page</h1>")
+// })
+
+// // Listen on a port
+
+// const PORT = process.env.PORT || 5000
+
+// app.listen(PORT, () => console.log(`Server Started on port ${PORT}...`))
+
+//? Level 7 : Authentification using jwt
+
+
 const express = require('express')
 const path = require('path')
-const Logger = require("morgan")
 const fs = require('fs')
+const jwt = require('jsonwebtoken')
+const verifyToken = require('./middlewares/verifyToken')
+
+const secretKey = 'youCantCatchme098765%^&*##@'
 
 // Init express
 
 const app = express()
-
-// create a write stream (in append mode)
-var accessLogStream = fs.createWriteStream(path.join(__dirname, "storage", "logsMorgan.txt"), { flags: 'a' })
- 
-// Logger 
-app.use(Logger('combined', { stream: accessLogStream }))
 
 
 // File serving
@@ -191,9 +229,41 @@ app.get('/', (req, res) => {
     res.end("Hello World !")
 })
 
-app.get('/home', (req, res) => {
-    res.writeHead(200, { "Content-Type": "text/html " })
-    res.end("<h1>Home Page</h1>")
+app.get('/home', verifyToken, (req, res) => {
+    jwt.verify(req.token, secretKey, (err, authData) => {
+        if (err) {
+            res.sendStatus(403)
+        } else {
+            res.writeHead(200, { "Content-Type": "text/html " })
+            res.end("<h1>Home Page</h1>")
+        }
+    })
+})
+
+app.post('/api/login', async (req, res) => {
+    try {
+        const users = require("./storage/users.json")
+
+        // On suppose que le username est unique
+        const user = users.find(user => (user.username === req.query.username) && (user.password === req.query.password))
+
+        const { username, password } = user
+
+        if (user) {
+            // const token = await jwt.sign({user}, secretKey)
+            jwt.sign({ username, password }, secretKey, { expiresIn: '30s' }, (err, token) => {
+                res.send({
+                    token
+                })
+            })
+        } else {
+            res.writeHead(400)
+            res.end("Incorrect Credentials")
+        }
+    } catch (error) {
+        res.writeHead(500)
+        res.end(error.message)
+    }
 })
 
 // Listen on a port
@@ -202,4 +272,6 @@ const PORT = process.env.PORT || 5000
 
 app.listen(PORT, () => console.log(`Server Started on port ${PORT}...`))
 
-//? Level 7 : Authentification using jwt
+// To sign in, send data with postman in query : username, password
+// Save token elsewhere (Note that it expires in 30s)
+// To access to /home, send the token in headers, authorization header : "Authorization : bearer TOKEN"
