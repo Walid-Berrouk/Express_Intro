@@ -247,9 +247,10 @@ app.post('/api/login', async (req, res) => {
         // On suppose que le username est unique
         const user = users.find(user => (user.username === req.query.username) && (user.password === req.query.password))
 
-        const { username, password } = user
-
         if (user) {
+
+            const { username, password } = user
+
             // const token = await jwt.sign({user}, secretKey)
             jwt.sign({ username, password }, secretKey, { expiresIn: '30s' }, (err, token) => {
                 res.send({
